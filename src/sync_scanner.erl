@@ -152,7 +152,13 @@ handle_cast(discover_src_dirs, State) ->
         {ok, {add, DirsAndOpts}} ->
             discover_source_dirs(State, dirs(DirsAndOpts));
         {ok, {replace, DirsAndOpts}} ->
-            {noreply, State#state{src_dirs = dirs(DirsAndOpts), hrl_dirs = []}}
+             case application:get_env(sync, hrl_dirs) of
+                 undefined ->
+                     HrlDirs = [];
+                 {ok, Dirs} ->
+                     HrlDirs = Dirs
+             end,
+             {noreply, State#state{src_dirs = dirs(DirsAndOpts), hrl_dirs = HrlDirs}}
     end;
 
 handle_cast(discover_src_files, State) ->
